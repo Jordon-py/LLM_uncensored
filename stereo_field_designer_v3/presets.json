@@ -1,0 +1,70 @@
+{
+  "Wide Dream": {
+    "width_db": 2.2,
+    "motion_depth": 0.25,
+    "morph_strength": 0.4,
+    "air_strength": 0.6,
+    "warmth_strength": 0.45,
+    "mono_guard_hz": 130.0,
+    "mono_guard_slope_hz": 80.0,
+    "target_lufs": -13.0,
+    "soft_clip_drive": 1.2,
+    "soft_clip_mix": 0.7
+  },
+  "Club Energy": {
+    "width_db": 1.6,
+    "motion_depth": 0.4,
+    "morph_strength": 0.55,
+    "air_strength": 0.7,
+    "warmth_strength": 0.35,
+    "mono_guard_hz": 140.0,
+    "mono_guard_slope_hz": 90.0,
+    "soft_clip_drive": 1.2,
+    "soft_clip_mix": 0.7
+  },
+  "Lo-Fi Warmth": {
+    "width_db": 0.8,
+    "motion_depth": 0.2,
+    "morph_strength": 0.25,
+    "air_strength": 0.35,
+    "warmth_strength": 0.7,
+    "mono_guard_hz": 150.0,
+    "mono_guard_slope_hz": 110.0,
+    "soft_clip_drive": 1.2,
+    "soft_clip_mix": 0.7
+  },
+  "Neon Skyline": {
+    "width_db": 2.6,
+    "motion_depth": 0.4,
+    "morph_strength": 0.6,
+    "air_strength": 0.75,
+    "warmth_strength": 0.3,
+    "mono_guard_hz": 120.0,
+    "mono_guard_slope_hz": 70.0,
+    "psycho_strength": 0.8,
+    "phase_degrees": 14.0,
+    "hrtf_amount": 0.45,
+    "correlation_guard": 0.2,
+    "target_lufs": -10.5,
+    "soft_clip_drive": 1.2,
+    "soft_clip_mix": 0.7
+  },
+  "Hi Fidelity": {
+    "width_db": 1.8,
+    "motion_depth": 0.2,
+    "morph_strength": 0.35,
+    "air_strength": 0.55,
+    "warmth_strength": 0.5,
+    "mono_guard_hz": 140.0,
+    "mono_guard_slope_hz": 90.0,
+    "psycho_strength": 0.6,
+    "phase_degrees": 10.0,
+    "hrtf_amount": 0.3,
+    "correlation_guard": 0.2,
+    "target_lufs": -13.0,
+    "soft_clip_drive": 1.15,
+    "soft_clip_mix": 0.55,
+    "crest_ratio": 1.4,
+    "crest_threshold_dbfs": -17.0
+  }
+}

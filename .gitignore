@@ -1,0 +1,30 @@
+.venv/
+LLMvenv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Audio / large assets
+*.wav
+*.mp3
+*.flac
+*.aif
+*.aiff
+*.ogg
+*.m4a
+
+# Outputs / logs
+out_*/
+Songs/
+mastering_log.json
+peak_risk_log.json
+transient_stress_log.json
