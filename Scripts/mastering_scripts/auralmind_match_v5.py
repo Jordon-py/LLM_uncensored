@@ -35,9 +35,9 @@ Pipeline:
 13) Write output audio + Markdown report.
     python auralmind_match_v5.py
   --reference "C:/Users/goku/Downloads/Lil Wayne_She Will.mp3"
-  --target "C:/Users/goku/Downloads/Vegas - top teir (15).wav"
-  --out "C:/Users/goku/Downloads/Vegas - Top Tier_hifinew.wav"
-  --report "C:/Users/goku/Downloads/Vegas - Top Tier_hifi_report.md"
+  --target "C:\\Users\\goku\\Downloads\\Its still love baby (1).wav"
+  --out "C:/Users/goku/Downloads/Vegas - its all love_hifinew.wav"
+  --report "C:/Users/goku/Downloads/Vegas - its all love_hifi_report.md"
    --sr 48000
   --fir_taps 4097
   --max_eq_db 8

@@ -11,7 +11,7 @@ Operational Axes:
 
 Usage:
   # Single file
-  python auralmind_reflexion_x.py --reference "C:/Users/iProg/Downloads/Lil Wayne - No Worries.mp3" --target "C:/Users/iProg/OneDrive/Desktop/Got too.wav" --out "Vegas ft suave - Got Too.wav" --preset trap_hifi
+  python auralmind_reflexion_x.py --reference "C:\\Users\\goku\\Downloads\\Brent Faiyaz - Pistachios [Official Video].wav" --target "C:\\Users\\goku\\Downloads\\Vegas - top teir (20).wav" --out "Vegas-Top Tier.wav" --preset trap_hifi
 
   # Batch (directory or multiple files)
   python auralmind_reflexion_x.py --reference "ref.wav" --target "mixes/" --out_dir "out/" --report_dir "out/reports/" --preset trap_streaming

@@ -3,7 +3,7 @@
 AuralMind - reference-based enhancement (LUFS + spectral/EQ matching + mild dynamics).
 
 Usage:
-  python auralmind_match_full_trap_v2.py --reference "C:/Users/goku/Downloads/Lil Wayne_She Will.mp3" --target "C:/Users/goku/Downloads/I'm Him (9).wav" --out "C:/Users/goku/Downloads/Vegas - Him 4enhanced.wav"
+  python auralmind_match_full_trap_v2.py --reference "C:\\Users\\goku\\Downloads\\Brent Faiyaz - Pistachios [Official Video].wav" --target "C:/Users/goku/Downloads/I'm Him (9).wav" --out "C:/Users/goku/Downloads/Vegas Toip terr 4enhanced.wav" --enable compression
 
 Pipeline:
   1) Decode/normalize inputs to float32 stereo at --sr.

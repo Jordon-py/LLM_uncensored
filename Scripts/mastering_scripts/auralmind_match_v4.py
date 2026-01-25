@@ -4,9 +4,9 @@ AuralMind - reference-based enhancement (LUFS + spectral/EQ matching + mild dyna
 
 Usage:
   
-  python "C:/Users/goku/LLM_uncensored/auralmind_match_v4.py" --reference "C:/Users/goku/Downloads/Lil Wayne_She Will.mp3" --target "C:/Users/goku/Downloads/I'm Him (9).wav" --out "C:/Users/goku/LLM_uncensored/out_v4/I'm Him (9)_v4_hifi.wav" --report "C:/Users/goku/LLM_uncensored/out_v4/Im_Him_2_v4_hifi_report.md" --sr 48000 --fir_taps 4097 --max_eq_db 9 --enable_compression --sub_align_cutoff_hz 120 --sub_align_max_ms 1.5 --sub_align_mono_strength 0.55 --sub_anchor_cutoff_hz 120 --sub_anchor_threshold_db -20 --sub_anchor_ratio 2.2 --sub_anchor_attack_ms 10 --sub_anchor_release_ms 180 --sub_anchor_sat_mix 0.06 --sub_anchor_sat_drive_db 2.0 --luminance_hp_hz 7200 --luminance_mix 0.06 --luminance_drive_db 1.5 --luminance_dyn_depth_db 2.0 --deesser_hp_hz 6500 --deesser_lp_hz 11500 --deesser_thresh 0.13 --deesser_max_reduction_db 4 --deesser_env_ms 25 --presence_bp_lo 800 --presence_bp_hi 3750 --presence_mix 0.07 --presence_drive_db 1.6 --presence_dyn_depth_db 2.0 --presence_env_ms 70 --target_peak_dbfs -1.0 --log_level INFO
+  python "C:/Users/goku/LLM_uncensored/Scripts/auralmind_match_v4.py" --reference "C:/Users/goku/Downloads/Brent Faiyaz - Pistachios [Official Video].wav" --target "C:/Users/goku/Downloads/SOMEBODY (2).wav" --out "C:/Users/goku/LLM_uncensored/out_v4/Cheff Jeff ft Vegas - Sombody hifi.wav" --report "C:/Users/goku/LLM_uncensored/out_v4/Im_Him_2_v4_hifi_report.md" --sr 48000 --fir_taps 4097 --max_eq_db 9 --enable_compression --sub_align_cutoff_hz 120 --sub_align_max_ms 1.5 --sub_align_mono_strength 0.55 --sub_anchor_cutoff_hz 120 --sub_anchor_threshold_db -20 --sub_anchor_ratio 2.2 --sub_anchor_attack_ms 10 --sub_anchor_release_ms 180 --sub_anchor_sat_mix 0.06 --sub_anchor_sat_drive_db 2.0 --luminance_hp_hz 7200 --luminance_mix 0.06 --luminance_drive_db 1.5 --luminance_dyn_depth_db 2.0 --deesser_hp_hz 6500 --deesser_lp_hz 11500 --deesser_thresh 0.13 --deesser_max_reduction_db 4 --deesser_env_ms 25 --presence_bp_lo 800 --presence_bp_hi 3750 --presence_mix 0.07 --presence_drive_db 1.6 --presence_dyn_depth_db 2.0 --presence_env_ms 70 --target_peak_dbfs -1.0 --log_level INFO
 
-  python auralmind_match_v4.py --reference "C:/Users/goku/Downloads/Lil Wayne_She Will.mp3" --target "C:/Users/goku/Downloads/Bigger picture .wav" --out "Bigger Picture_v5.wav
+  python auralmind_match_v4.py --reference "C:/Users/goku/Downloads/Lil Wayne_She Will.mp3" --target "C:/Users/goku/Downloads/SOMEBODY.wav" --out "cHEF jEFF FT vEGAS_v5.wav
   
    Pipeline:
   1) Decode/normalize inputs to float32 stereo at --sr.
@@ -1087,7 +1087,7 @@ def main() -> int:
 
     # Export (24-bit PCM WAV)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    sf.write(args.out, processed, sr, subtype="PCM_24")
+    sf.write(args.out, processed, sr, subtype="FLOAT")
 
     # Report
     args.report.parent.mkdir(parents=True, exist_ok=True)

@@ -15,7 +15,7 @@ CORE FEATURES (v2):
 - Spectral Matching (Tonal Balance)
 
 USAGE:
-python auralmind_match_v3.py --reference "C:/Users/goku/Downloads/Lil Wayne - She Will ft. Drake.mp3" --target "C:/Users/goku/Downloads/Im Him (2).wav" --out "master_v4.wav"
+python auralmind_match_v3.py --reference "C:/Users/goku/Downloads/Brent Faiyaz - Pistachios [Official Video].wav" --target "C:/Users/goku/Downloads/SOMEBODY.wav" --out "master_v4.wav"
 
 PIPELINE:
   1) Decode/normalize inputs to float32 stereo at --sr.
@@ -80,10 +80,10 @@ def _run(cmd: list[str]) -> None:
         cmd_str = subprocess.list2cmdline(cmd)
         msg_lines = [f"Command failed ({result.returncode}): {cmd_str}"]
         if result.stdout:
-            msg_lines.append("stdout:\n" + result.stdout.strip())
+            msg_lines.append("stdout:/n" + result.stdout.strip())
         if result.stderr:
-            msg_lines.append("stderr:\n" + result.stderr.strip())
-        raise RuntimeError("\n".join(msg_lines))
+            msg_lines.append("stderr:/n" + result.stderr.strip())
+        raise RuntimeError("/n".join(msg_lines))
 
 def decode_with_ffmpeg_to_wav(
     input_path: Path,
@@ -188,7 +188,7 @@ def load_audio_any_format(
         if ffmpeg_error:
             msg_lines.append(f"ffmpeg error: {ffmpeg_error}")
         msg_lines.append(f"librosa error: {exc}")
-        raise RuntimeError("\n".join(msg_lines)) from exc
+        raise RuntimeError("/n".join(msg_lines)) from exc
 
 def ensure_finite(x: np.ndarray) -> np.ndarray:
     if not np.isfinite(x).all():
