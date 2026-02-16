@@ -31,7 +31,7 @@ high quality
 ----------------------------------------------------------
 
 PowerShell example (your exact flow):
-python auralmind_match_maestro_v7_1.py --preset innovative_trap --reference "C:/Users/goku/Downloads/Brent Faiyaz - Pistachios [Official Video].mp3" --target   "C:/Users/goku/Downloads/Vegas - top teir (20).wav" --out "C:/Users/goku/Desktop/Vegas_Top_Teir_MASTER_innovative_v7_1.wav" --report   "C:/Users/goku/Desktop/Vegas_Top_Teir_MASTER_v7_1_Report.md" --target_lufs -13.0 --target_peak_dbfs -1.0 --enable_spatial --enable_movement --enable_key_glow --enable_transient_restore --enable_stem_separation --enable_mono_sub
+python auralmind_match_maestro_v7_1.py --preset innovative_trap --reference "C:/Users/goku/Downloads/Brent Faiyaz - Pistachios [Official Video].mp3" --target   "C:/Users/goku/Downloads/Vegas - top teir (20).wav" --out "C:/Users/goku/Desktop/Vegas_Top_Teir_MASTER_innovative_v7_1.wav" --report   "C:/Users/goku/Desktop/Vegas_Top_Teir_MASTER_v7_1_Report.md" --target_lufs -11.0 --target_peak_dbfs -1.0 --enable_spatial --enable_movement --enable_key_glow --enable_transient_restore --enable_stem_separation --enable_mono_sub
 
 """
 
@@ -39,15 +39,27 @@ from __future__ import annotations
 
 MAESTRO_VERSION = "v7.1"
 
+
+import os
+import sys
+import time
+import shutil
 import argparse
 import json
-import logging
 import math
-import os
-from dataclasses import dataclass
+import logging
+import faulthandler
+from contextlib import contextmanager
+
+LOG = logging.getLogger("auralmind")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-7s | %(message)s", filemode='w', filename='auralmind.log' )
+
+import tempfile
+import subprocess
 from pathlib import Path
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
-import sys
+
 import numpy as np
 import soundfile as sf
 try:
@@ -115,12 +127,144 @@ except Exception:
 # =============================================================================
 
 LOG = logging.getLogger("auralmind")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-7s | %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-7s | %(message)s", filemode='w', filename='auralmind.log' )
+
 
 
 # =============================================================================
-# Utility
+# Utility - Export Guard + SoXR SRC (FFmpeg)
 # =============================================================================
+
+SRC_PRESETS = {
+    # Matches your examples
+    "hq":  {"precision": 28, "cheby": 0, "codec": "pcm_s24le"},
+    "max": {"precision": 32, "cheby": 1, "codec": "pcm_s24le"},
+}
+
+def _which_ffmpeg(user_path: str | None = None) -> str | None:
+    """
+    Resolve ffmpeg path.
+    - Prefer user-provided --ffmpeg
+    - Else search PATH
+    """
+    if user_path:
+        p = Path(user_path)
+        if p.exists():
+            return str(p)
+    return shutil.which("ffmpeg")
+
+def _ffmpeg_soxr_resample(
+    ffmpeg_path: str,
+    in_wav: Path,
+    out_wav: Path,
+    out_sr: int,
+    precision: int,
+    cheby: int,
+    codec: str,
+) -> None:
+    """
+    Run FFmpeg SoXR resample:
+      aresample=resampler=soxr:precision=XX:cheby=Y
+
+    Notes:
+    - Writes WAV (codec controls bit depth/PCM format).
+    - Uses -y overwrite + quiet-ish logging.
+    """
+    filt = f"aresample=resampler=soxr:precision={int(precision)}:cheby={int(cheby)}"
+    cmd = [
+        ffmpeg_path,
+        "-hide_banner", "-y",
+        "-loglevel", "error",
+        "-i", str(in_wav),
+        "-af", filt,
+        "-ar", str(int(out_sr)),
+        "-c:a", str(codec),
+        str(out_wav),
+    ]
+    subprocess.run(cmd, check=True)
+
+def export_guarded_wav(
+    audio: np.ndarray,
+    input_sr: int,
+    out_path: Path,
+    export_sr: int,
+    src_preset: str,
+    ffmpeg_path: str | None,
+    subtype_on_direct_write: str = "PCM_24",
+) -> dict:
+    """
+    Export Guard:
+      - If input_sr == export_sr: direct soundfile write (no SRC)
+      - Else: SoXR SRC via FFmpeg using preset-driven settings
+
+    Returns dict describing exactly what happened (for report + logs).
+    """
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    export_sr = int(export_sr)
+    input_sr = int(input_sr)
+
+    info = {
+        "input_sr": input_sr,
+        "export_sr": export_sr,
+        "src_applied": False,
+        "src_backend": None,
+        "src_preset": src_preset,
+        "soxr": None,
+        "codec": None,
+        "direct_write_subtype": None,
+        "path": str(out_path),
+    }
+
+    # Guard: no SRC needed
+    if input_sr == export_sr:
+        sf.write(out_path, stereoize(audio), input_sr, subtype=subtype_on_direct_write)
+        info["src_applied"] = False
+        info["src_backend"] = "none"
+        info["direct_write_subtype"] = subtype_on_direct_write
+        LOG.info("Export Guard: input_sr == export_sr (%s). Skipping SRC. subtype=%s", input_sr, subtype_on_direct_write)
+        return info
+
+    # SRC needed -> SoXR (FFmpeg)
+    preset = SRC_PRESETS.get(str(src_preset).lower(), SRC_PRESETS["hq"])
+    precision = int(preset["precision"])
+    cheby = int(preset["cheby"])
+    codec = str(preset["codec"])
+
+    ff = _which_ffmpeg(ffmpeg_path)
+    if not ff:
+        # Hard fail because you explicitly requested SoXR application when SR differs
+        raise RuntimeError(
+            "Export Guard: export_sr differs from input_sr, but ffmpeg not found. "
+            "Install ffmpeg or pass --ffmpeg /path/to/ffmpeg."
+        )
+
+    info["src_applied"] = True
+    info["src_backend"] = "ffmpeg_soxr"
+    info["soxr"] = {"precision": precision, "cheby": cheby}
+    info["codec"] = codec
+
+    LOG.info(
+        "Export Guard: SRC required (%s -> %s). Using SoXR preset=%s precision=%s cheby=%s codec=%s ffmpeg=%s",
+        input_sr, export_sr, src_preset, precision, cheby, codec, ff
+    )
+
+    # Write temp WAV at input_sr, then FFmpeg resample to final out_path
+    with tempfile.TemporaryDirectory() as td:
+        tmp_in = Path(td) / "tmp_in.wav"
+        sf.write(tmp_in, stereoize(audio), input_sr, subtype="FLOAT")  # lossless-ish staging
+        _ffmpeg_soxr_resample(
+            ffmpeg_path=ff,
+            in_wav=tmp_in,
+            out_wav=out_path,
+            out_sr=export_sr,
+            precision=precision,
+            cheby=cheby,
+            codec=codec,
+        )
+
+    return info
 
 
 def db_to_lin(db: float) -> float:
@@ -1797,15 +1941,15 @@ PRESETS = {
   },
 
   "balanced_v7": {
-    "target_lufs": -12.4,
+    "target_lufs": -11.4,
     "target_peak_dbfs": -1.0,
 
     # Lower match vs original (0.76 was high-risk for “muffled-when-loud”)
     "fir_taps": 4097,
-    "match_strength": 0.62,
-    "match_lo_hz": 115.0,
-    "match_hi_hz": 14420.0,
-    "max_eq_db": 5.5,
+    "match_strength": 0.63,
+    "match_lo_hz": 120.0,
+    "match_hi_hz": 14000.0,
+    "max_eq_db": 5.8,
     "eq_smooth_hz": 95.0,
     "match_strength_hi_factor": 0.72,
 
@@ -1818,7 +1962,7 @@ PRESETS = {
     "stereo_width_hi": 1.25,
 
     "enable_movement": True,
-    "rhythm_amount": 0.12,
+    "rhythm_amount": 0.10,
 
     "enable_transient_restore": True,
     "attack_restore_db": 1.05,
@@ -1843,7 +1987,7 @@ PRESETS = {
   },
 
   "innovative_trap": {
-    "target_lufs": -12.7,
+    "target_lufs": -10.7,
     "target_peak_dbfs": -1.0,
 
     "fir_taps": 4097,
@@ -1851,10 +1995,10 @@ PRESETS = {
     "tp_oversample": 8,
 
     # Match EQ: allow true “air polish”
-    "match_strength": 0.58,
+    "match_strength": 0.56,
     "match_lo_hz": 120.0,
-    "match_hi_hz": 14420.0,
-    "max_eq_db": 5.1,
+    "match_hi_hz": 16000.0,
+    "max_eq_db": 5.6,
     "eq_smooth_hz": 90.0,
     "match_strength_hi_factor": 0.70,
 
@@ -1866,8 +2010,8 @@ PRESETS = {
     # Shimmer: de-resonate (Q↓), reduce gain/mix—more “expensive air”, less “ring”
     "enable_scale_shimmer": True,
     "shimmer_drive": 1.55,
-    "shimmer_mix": 0.05,
-    "shimmer_band_gain_db": 0.8,
+    "shimmer_mix": 0.04,
+    "shimmer_band_gain_db": 0.7,
     "shimmer_q": 5.5,
 
     "enable_spatial": True,
@@ -1930,7 +2074,7 @@ PRESETS = {
 
     "enable_mono_sub": True,
     "mono_sub_hz": 110.0,
-    "mono_sub_mix": 0.74,
+    "mono_sub_mix": 0.78,
 
     "tilt_db_per_oct": 0.13,
     "tilt_pivot_hz": 1100.0,
